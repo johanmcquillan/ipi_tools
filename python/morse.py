@@ -45,7 +45,7 @@ while run_flag == True:
         cellh = [struct.unpack("d", cell_h[i*8:(i+1)*8])[0] for i in range(9)]
 
         if first:
-            pes = 1DMorse(0.5, cellh[8])
+            pes = Morse1D(0.5, cellh[8])
         else:
             pes.update_cell(cellh[8])
 
