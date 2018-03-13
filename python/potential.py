@@ -49,7 +49,7 @@ class Morse1D(PotentialEnergySurface):
 
     def potential(self, z):
         n0 = np.any(z <= self.z0).size
-        n1 = np.all(z >= self.z1).size
+        n1 = np.any(z >= self.z1).size
         if n0 + n1 > 0:
             raise ValueError('{} molecules have gone over top wall\n{} molecules have gone below bottom wall'.format(n0, n1))
 
