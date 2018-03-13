@@ -4,6 +4,7 @@ import socket
 import struct
 import sys
 import numpy as np
+from potential import 1DMorse
 
 # ipi uses atomic units
 L = 6.022E23
@@ -36,46 +37,6 @@ elif len(sys.argv) > 1:             # if 1 argument, open unix port
 else:
     raise ValueError('Need at least one argument (address for UNIX port) or two arguments (port and IP for INET port)')
 
-# Potential Energy Surface object
-class PES:
-    def __init__(self, w, c):
-        # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
-        self.zeta = 3.85 / bohr2angs
-        self.a = 0.92 * bohr2angs
-        self.D = 57.8E-3 * ev2har
-        self.w = w / bohr2nm
-        self.update_cell(c)
-
-    def update_cell(self, c):
-        assert self.w < c
-        self.c = c # / bohr2nm
-        self.z0 = (c - self.w)/2
-        self.z1 = (c + self.w)/2
-
-    def pbc(self, z):
-        while np.any(z < 0):
-            z += self.c * (z < 0).astype(int)
-        while np.any(z > self.c):
-            z -= self.c * (z > self.c).astype(int)
-        return z
-
-    def potential(self, z):
-        n0 = np.any(z <= self.z0).size
-        n1 = np.all(z >= self.z1).size
-        if n0 + n1 > 0:
-            raise ValueError('{} molecules have gone over top wall\n{} molecules have gone below bottom wall'.format(n0, n1))
-
-        V = np.zeros(z.shape)
-        V = self.D * ((1.0 - np.exp(-self.a*(z - self.z0 - self.zeta)))**2 +
-                    (1.0 - np.exp(-self.a*(self.z1 - z - self.zeta)))**2 - 2.0)
-        return np.sum(V)
-
-    def gradient(self, z):
-        F = np.zeros(z.shape)
-        F = 2 * self.a * self.D * (np.exp(-self.a*(z - self.z0 - self.zeta)) - np.exp(-2*self.a*(z - self.z0 - self.zeta)) - 
-                                    np.exp(-self.a*(self.z1 - z - self.zeta)) + np.exp(-2*self.a*(self.z1 - z - self.zeta)))
-        return F
-
 first = True
 while run_flag == True:
     msg = fsoc.recv(HDRLEN)
@@ -84,7 +45,7 @@ while run_flag == True:
         cellh = [struct.unpack("d", cell_h[i*8:(i+1)*8])[0] for i in range(9)]
 
         if first:
-            pes = PES(0.5, cellh[8])
+            pes = 1DMorse(0.5, cellh[8])
         else:
             pes.update_cell(cellh[8])
 
