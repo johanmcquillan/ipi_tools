@@ -4,7 +4,7 @@ import socket
 import struct
 import sys
 import numpy as np
-from potential import 1DMorse
+from potential import Morse1D
 
 # ipi uses atomic units
 L = 6.022E23

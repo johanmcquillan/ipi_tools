@@ -24,7 +24,7 @@ class PotentialEnergySurface(object):
     def gradient(self, r):
         pass
 
-class 1DMorse(PotentialEnergySurface):
+class Morse1D(PotentialEnergySurface):
     
     def __init__(self, w, c):
         # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
