@@ -5,7 +5,7 @@ import struct
 import sys
 import numpy as np
 
-# i-pi use annoying atomic units, make sure to be consistent
+# ipi uses atomic units
 L = 6.022E23
 bohr2angs = 0.52918
 bohr2nm = bohr2angs / 10
@@ -13,31 +13,32 @@ ev2har = 1.0/27.2114
 foc2au = ev2har*bohr2angs
 kJ2eV = 6.241509125E21
 
+# initialise socket
 have_data = False
 run_flag = True
-
-# open a socket
 HDRLEN = 12
-have_data = False
-run_flag = True
-
-# open a socket
-if len(sys.argv) > 2:
-    port = int(sys.argv[1])
+if len(sys.argv) > 2:           # if 2 arguments, open inet port
+    try:
+        port = int(sys.argv[1])     # both ip and port MUST be specified in ffsocket in ipi input
+        assert port >= 4000
+    except ValueError, AssertionError:
+        raise ValueError('Port must be integer and >= 4000')
     addr = sys.argv[2]
+    socket.inet_aton(addr)
     fsoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     fsoc.connect((addr, port))
-elif len(sys.argv) > 1:
-    addr = "/tmp/ipi_"+sys.argv[1] # "ipiaddr" is a string you haveto make it consistent with ipi input
+elif len(sys.argv) > 1:         # if 1 argument, open unix port
+    ipi_addr = sys.argv[1]      # this MUST be specified as <address> in ffsocket in ipi input
+    addr = "/tmp/ipi_"+ipi_addr
     fsoc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     fsoc.connect(addr)
 else:
-    assert 1 == 2
+    raise ValueError('Need at least one argument (address for UNIX port) or two arguments (port and IP for INET port)')
 
-# PES object
+# Potential Energy Surface object
 class PES:
-
     def __init__(self, w, c):
+        # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
         self.zeta = 3.85 / bohr2angs
         self.a = 0.92 * bohr2angs
         self.D = 57.8E-3 * ev2har
@@ -45,7 +46,6 @@ class PES:
         self.update_cell(c)
 
     def update_cell(self, c):
-        # print self.w * bohr2angs, c * bohr2angs, (c - self.w)/2 * bohr2angs, (c + self.w)/2 * bohr2angs
         assert self.w < c
         self.c = c # / bohr2nm
         self.z0 = (c - self.w)/2
@@ -73,7 +73,6 @@ class PES:
                                     np.exp(-self.a*(self.z1 - z - self.zeta)) + np.exp(-2*self.a*(self.z1 - z - self.zeta)))
         return F
 
-# force field Loop
 first = True
 while run_flag == True:
     msg = fsoc.recv(HDRLEN)
@@ -121,3 +120,4 @@ while run_flag == True:
         have_data = False
     else:
         run_flag = False
+
