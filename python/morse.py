@@ -17,18 +17,19 @@ kJ2eV = 6.241509125E21
 have_data = False
 run_flag = True
 HDRLEN = 12
-if len(sys.argv) > 2:           # if 2 arguments, open inet port
+if len(sys.argv) > 2:               # if 2 arguments, open inet port
     try:
         port = int(sys.argv[1])     # both ip and port MUST be specified in ffsocket in ipi input
         assert port >= 4000
     except ValueError, AssertionError:
         raise ValueError('Port must be integer and >= 4000')
     addr = sys.argv[2]
-    socket.inet_aton(addr)
+    if addr != 'localhost' and not all(i.isdigit() for i in addr.split('.')):
+        raise ValueError('Must give valid IP address of \'localhost\'')
     fsoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     fsoc.connect((addr, port))
-elif len(sys.argv) > 1:         # if 1 argument, open unix port
-    ipi_addr = sys.argv[1]      # this MUST be specified as <address> in ffsocket in ipi input
+elif len(sys.argv) > 1:             # if 1 argument, open unix port
+    ipi_addr = sys.argv[1]          # this MUST be specified as <address> in ffsocket in ipi input
     addr = "/tmp/ipi_"+ipi_addr
     fsoc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     fsoc.connect(addr)
@@ -59,8 +60,10 @@ class PES:
         return z
 
     def potential(self, z):
-        assert np.all(z > self.z0)
-        assert np.all(z < self.z1)
+        n0 = np.any(z <= self.z0).size
+        n1 = np.all(z >= self.z1).size
+        if n0 + n1 > 0:
+            raise ValueError('{} molecules have gone over top wall\n{} molecules have gone below bottom wall'.format(n0, n1))
 
         V = np.zeros(z.shape)
         V = self.D * ((1.0 - np.exp(-self.a*(z - self.z0 - self.zeta)))**2 +
