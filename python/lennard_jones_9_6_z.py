@@ -35,10 +35,6 @@ elif len(sys.argv) > 1:
 else:
     assert 1 == 2
 
-# PES object
-
-pes = PES(1.25, 1.75, 5./12.)
-
 first = True
 while run_flag == True:
     msg = fsoc.recv(HDRLEN)
