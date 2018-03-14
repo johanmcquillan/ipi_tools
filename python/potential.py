@@ -37,6 +37,9 @@ class PotentialEnergySurface(object):
     def gradient(self, r):
         pass
 
+    def force(self, r):
+        return -self.gradient(r)
+
 class Morse1D(PotentialEnergySurface):
     
     def __init__(self, w, c):
