@@ -26,7 +26,7 @@ if len(sys.argv) > 2:               # if 2 arguments, open inet port
         raise ValueError('Port must be integer and >= 4000')
     addr = sys.argv[2]
     if addr != 'localhost' and not all(i.isdigit() for i in addr.split('.')):
-        raise ValueError('Must give valid IP address of \'localhost\'')
+        raise ValueError('Must give valid IP address or \'localhost\'')
     fsoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     fsoc.connect((addr, port))
 elif len(sys.argv) > 1:             # if 1 argument, open unix port
@@ -35,7 +35,7 @@ elif len(sys.argv) > 1:             # if 1 argument, open unix port
     fsoc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     fsoc.connect(addr)
 else:
-    raise ValueError('Need at least one argument (address for UNIX port) or two arguments (port and IP for INET port)')
+    raise ValueError('Need at least one argument (address for UNIX port) or two arguments (port and IP for INET)')
 
 first = True
 while run_flag == True:
