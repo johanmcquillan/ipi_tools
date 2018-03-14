@@ -5,8 +5,8 @@ import struct
 import argparse
 import textwrap
 import inspect
-import potentials
 import numpy as np
+from packages import potentials
 
 # Conversion factors (i-PI uses atomic units)
 L = 6.022E23

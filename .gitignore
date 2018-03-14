@@ -1,0 +1,11 @@
+#ignored patterns
+
+*.pyc
+*.pyo
+*.x
+*.mod
+*.out
+*.o
+*~
+\#*
+*.orig
