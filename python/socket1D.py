@@ -14,7 +14,7 @@ ev2har = 1.0/27.2114
 foc2au = ev2har*bohr2angs
 kJ2eV = 6.241509125E21
 
-def connect_and_run(address, port, PES)
+def connect_and_run(address, port, PES):
     # initialise socket
     have_data = False
     run_flag = True
