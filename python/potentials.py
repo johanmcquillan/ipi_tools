@@ -90,3 +90,4 @@ class LennardJones1D(PotentialEnergySurface):
         F = self.epsilon *  (-self.factor*9.*self.sigma**9/(z - self.z0)**10 - 3.*self.sigma**3/(z - self.z0)**4 + 
                               self.factor*9.*self.sigma**9/(self.z1 - z)**10 + 3.*self.sigma**3/(self.z1 - z)**4)
         return F
+
