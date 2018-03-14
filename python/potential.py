@@ -12,9 +12,22 @@ kJ2eV = 6.241509125E21
 class PotentialEnergySurface(object):
     __metaclass__ = ABCMeta
 
-    @abstractmethod
-    def pbc(self, r):
-        pass
+    def __init__(self, w, c):
+        self.w = w / bohr2nm
+        self.update_cell(c)
+
+    def update_cell(self, c):
+        assert self.w < c
+        self.c = c
+        self.z0 = (c - self.w)/2
+        self.z1 = (c + self.w)/2
+
+    def pbc(self, z):
+        while np.any(z < 0):
+            z += self.c * (z < 0).astype(int)
+        while np.any(z > self.c):
+            z -= self.c * (z > self.c).astype(int)
+        return z
     
     @abstractmethod
     def potential(self, r):
@@ -31,21 +44,7 @@ class Morse1D(PotentialEnergySurface):
         self.zeta = 3.85 / bohr2angs
         self.a = 0.92 * bohr2angs
         self.D = 57.8E-3 * ev2har
-        self.w = w / bohr2nm
-        self.update_cell(c)
-
-    def update_cell(self, c):
-        assert self.w < c
-        self.c = c
-        self.z0 = (c - self.w)/2
-        self.z1 = (c + self.w)/2
-
-    def pbc(self, z):
-        while np.any(z < 0):
-            z += self.c * (z < 0).astype(int)
-        while np.any(z > self.c):
-            z -= self.c * (z > self.c).astype(int)
-        return z
+        super(Morse1D, self).__init__(w, c)
 
     def potential(self, z):
         if np.any(z <= self.z0) or np.any(z >= self.z1):
@@ -64,27 +63,14 @@ class Morse1D(PotentialEnergySurface):
         return F
 
 class LennardJones1D(PotentialEnergySurface):
+    
     def __init__(self, w, c):
         # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
         self.zeta = 3.85 / bohr2angs
         self.factor = 5./12.
         self.epsilon = 2.092 / L * kJ2eV * ev2har # 2.092 kJ/mol, converted to Ha
         self.w = w / bohr2nm
-        self.sigma = 0.3 / bohr2nm
-        self.update_cell(c)
-
-    def update_cell(self, c):
-        assert self.w < c
-        self.c = c
-        self.z0 = (c - self.w)/2
-        self.z1 = (c + self.w)/2
-
-    def pbc(self, z):
-        while np.any(z < 0):
-            z += self.c * (z < 0).astype(int)
-        while np.any(z > self.c):
-            z -= self.c * (z > self.c).astype(int)
-        return z
+        super(LennardJones1D, self).__init__(w, c)
 
     def potential(self, z):
         if np.any(z <= self.z0) or np.any(z >= self.z1):
