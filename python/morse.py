@@ -42,12 +42,13 @@ while run_flag == True:
     msg = fsoc.recv(HDRLEN)
     if msg == "POSDATA     ":
         cell_h = fsoc.recv(9*8)
-        cellh = [struct.unpack("d", cell_h[i*8:(i+1)*8])[0] for i in range(9)]
+        cell_h = [struct.unpack("d", cell_h[i*8:(i+1)*8])[0] for i in range(9)]
 
         if first:
-            pes = Morse1D(0.5, cellh[8])
+            pes = Morse1D(0.5, cell_h[8])
+            first = False
         else:
-            pes.update_cell(cellh[8])
+            pes.update_cell(cell_h[8])
 
         cell_ih = fsoc.recv(9*8)
         
