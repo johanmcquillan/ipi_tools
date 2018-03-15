@@ -21,7 +21,7 @@ potential_names = []
 for name, member in inspect.getmembers(potentials):
     if inspect.isclass(member) and name not in ['ABCMeta', 'PotentialEnergySurface']:
         potential_names.append(name)
-potential_help = 'External potential name - possible options below are:'
+potential_help = 'External potential name - possible options are below:'
 potential_text = ''
 for p in sorted(potential_names):
     potential_text += '\n    {}'.format(p)
