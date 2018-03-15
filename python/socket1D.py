@@ -8,14 +8,6 @@ import inspect
 import numpy as np
 from packages import potentials
 
-# Conversion factors (i-PI uses atomic units)
-L = 6.022E23
-bohr2angs = 0.52918
-bohr2nm = bohr2angs / 10
-ev2har = 1.0/27.2114
-foc2au = ev2har*bohr2angs
-kJ2eV = 6.241509125E21
-
 # Get list of implemented external potentials from module
 potential_names = []
 for name, member in inspect.getmembers(potentials):
@@ -78,7 +70,7 @@ while run_flag == True:
         
         # Instantiate or update the external potential
         if first:
-            pes = PES(0.5, cell_h[8])
+            pes = PES(5*potentials.angs2bohr, cell_h[8])
             first = False
         else:
             pes.update_cell(cell_h[8])
@@ -102,7 +94,7 @@ while run_flag == True:
         
         # Calculate total potential and force on each oxygen
         V = np.sum(pes.potential(z_array))
-        F_oxygens = pes.force(z_array)
+        F_oxygens = pes.force(z_array, checked_confined=True)
         
         # Reformat force array so it has zeros for H and zeros for x & y for O
         F = np.zeros(nat*3)
