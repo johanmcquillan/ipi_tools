@@ -75,21 +75,21 @@ while run_flag == True:
         # Unpack cell matrix
         cell_h = fsoc.recv(9*8)
         cell_h = [struct.unpack("d", cell_h[i*8:(i+1)*8])[0] for i in range(9)]
-
+        
         # Instantiate or update the external potential
         if first:
             pes = PES(0.5, cell_h[8])
             first = False
         else:
             pes.update_cell(cell_h[8])
-
+        
         # Unpack inverse of cell matrix
         cell_ih = fsoc.recv(9*8)
         
         # Unpack total number of atoms
         nat = fsoc.recv(4)
         nat = struct.unpack("i", nat)[0]
-
+        
         # Unpack position data
         read_pos = fsoc.recv(nat*3*8)
         pos = np.zeros([nat,3])
@@ -103,11 +103,11 @@ while run_flag == True:
         # Calculate total potential and force on each oxygen
         V = np.sum(pes.potential(z_array))
         F_oxygens = pes.force(z_array)
-
+        
         # Reformat force array so it has zeros for H and zeros for x & y for O
         F = np.zeros(nat*3)
         F[2::9] = F_oxygens
-
+        
         have_data = True
     elif msg == "STATUS      ":
         if have_data == False:
@@ -126,3 +126,4 @@ while run_flag == True:
         have_data = False
     else:
         run_flag = False
+

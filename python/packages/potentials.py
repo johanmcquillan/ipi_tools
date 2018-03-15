@@ -13,12 +13,15 @@ class PotentialEnergySurface(object):
     __metaclass__ = ABCMeta
     
     def __init__(self, w, c):
-        self.w = w / bohr2nm
+        self.w = w
         self.update_cell(c)
     
     def update_cell(self, c):
-        assert self.w < c / bohr2nm
-        self.c = c / bohr2nm
+        if self.w >= c/2:
+            message = 'Confinement width must be less than half of cell height\n'
+            message += 'Conf. width = {} Angs; height / 2 = {} Angs'.format(self.w*bohr2angs, c*bohr2angs)
+            raise ValueError(message)
+        self.c = c
         self.z0 = (self.c - self.w)/2
         self.z1 = (self.c + self.w)/2
     
@@ -37,13 +40,32 @@ class PotentialEnergySurface(object):
     def gradient(self, r):
         pass
     
+    @abstractmethod
+    def get_r_equil(self):
+        pass
+    
     def force(self, r):
         return -self.gradient(r)
+    
+    def potential_su(self, r):
+        return self.potential(r / bohr2angs) * foc2au
+    
+    def gradient_su(self, r):
+        return self.gradient(r / bohr2angs) * foc2au
+    
+    def force_su(self, r):
+        return self.force(r / bohr2angs) * foc2au
+    
+    def get_r_equil_su(self):
+        return self.get_r_equil() * bohr2angs
 
 class Morse1D(PotentialEnergySurface):
     
-    def __init__(self, w, c):
+    def __init__(self, w, c, au=False):
         # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
+        if not au:
+            w /= bohr2angs
+            c /= bohr2angs
         self.zeta = 3.85 / bohr2angs
         self.a = 0.92 * bohr2angs
         self.D = 57.8E-3 * ev2har
@@ -64,15 +86,21 @@ class Morse1D(PotentialEnergySurface):
         F = 2 * self.a * self.D * (np.exp(-self.a*(z - self.z0 - self.zeta)) - np.exp(-2*self.a*(z - self.z0 - self.zeta)) - 
                                     np.exp(-self.a*(self.z1 - z - self.zeta)) + np.exp(-2*self.a*(self.z1 - z - self.zeta)))
         return F
+   
+    def get_r_equil(self):
+        return self.zeta
 
 class LennardJones1D(PotentialEnergySurface):
     
-    def __init__(self, w, c):
+    def __init__(self, w, c, au=False):
         # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
-        self.zeta = 3.85 / bohr2angs
+        if not au:
+            w /= bohr2angs
+            c /= bohr2angs
+        self.sigma = 3.0 / bohr2angs
         self.factor = 5./12.
         self.epsilon = 2.092 / L * kJ2eV * ev2har # 2.092 kJ/mol, converted to Ha
-        self.w = w / bohr2nm
+        self.w = w
         super(LennardJones1D, self).__init__(w, c)
     
     def potential(self, z):
@@ -90,4 +118,7 @@ class LennardJones1D(PotentialEnergySurface):
         F = self.epsilon *  (-self.factor*9.*self.sigma**9/(z - self.z0)**10 - 3.*self.sigma**3/(z - self.z0)**4 + 
                               self.factor*9.*self.sigma**9/(self.z1 - z)**10 + 3.*self.sigma**3/(self.z1 - z)**4)
         return F
+    
+    def get_r_equil(self):
+        return self.sigma
 
