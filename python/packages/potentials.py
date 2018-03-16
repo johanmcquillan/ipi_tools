@@ -143,7 +143,7 @@ class LennardJones1D(PotentialEnergySurface):
     
     @property
     def r_eq(self):
-        return self.sigma
+        return np.power(6 * self.factor, 1./6.) * self.sigma
 
 class LennardJones1DStanley(PotentialEnergySurface):
     
@@ -174,4 +174,4 @@ class LennardJones1DStanley(PotentialEnergySurface):
     
     @property
     def r_eq(self):
-        return self.sigma
+        return np.power(6, 1./6.) * self.sigma
