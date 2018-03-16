@@ -1,6 +1,6 @@
 
 import numpy as np
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 # i-PI uses atomic units
 #       Bohr Radii (a0),    Hartree (Ha)
@@ -55,9 +55,13 @@ class PotentialEnergySurface(object):
     def gradient(self, r, checked_confined=False):
         pass
     
-    @abstractmethod
-    def get_r_equil(self):
+    @abstractproperty
+    def r_eq(self):
         pass
+
+    @property
+    def r_eq_su(self):
+        return self.r_eq * bohr2angs
     
     def force(self, r, checked_confined=False):
         return -self.gradient(r, checked_confined)
@@ -76,9 +80,6 @@ class PotentialEnergySurface(object):
     
     def force_su(self, r, checked_confined=False):
         return self.force(r * angs2bohr, checked_confined) * au2foc
-    
-    def get_r_equil_su(self):
-        return self.get_r_equil() * bohr2angs
 
 class Morse1D(PotentialEnergySurface):
     
@@ -108,7 +109,8 @@ class Morse1D(PotentialEnergySurface):
                                     np.exp(-self.a*(self.z1 - z - self.zeta)) + np.exp(-2*self.a*(self.z1 - z - self.zeta)))
         return F
    
-    def get_r_equil(self):
+    @property
+    def r_eq(self):
         return self.zeta
 
 class LennardJones1D(PotentialEnergySurface):
@@ -139,6 +141,6 @@ class LennardJones1D(PotentialEnergySurface):
                               self.factor*9.*self.sigma**9/(self.z1 - z)**10 + 3.*self.sigma**3/(self.z1 - z)**4)
         return F
     
-    def get_r_equil(self):
+    @property
+    def r_eq(self):
         return self.sigma
-
