@@ -1,4 +1,4 @@
 #!/bin/bash
 
-../python/socket1D.py LennardJones1D $@
+$(dirname me $0)/../python/socket1D.py LennardJones1D $@
 
