@@ -148,7 +148,7 @@ class LennardJones1D(PotentialEnergySurface):
 class LennardJones1DStanley(PotentialEnergySurface):
     
     def __init__(self, w, c, au=True):
-        # Parameters from Kumar et al., Phys. Rev. E, 72, 5, 051503 (2016)
+        # Parameters from Kumar et al., Phys. Rev. E, 72, 5, 051503 (2005)
         if not au:
             w *= angs2bohr
             c *= angs2bohr
