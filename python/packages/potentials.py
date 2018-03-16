@@ -44,9 +44,7 @@ class PotentialEnergySurface(object):
         if np.any(z <= self.z0) or np.any(z >= self.z1):
             n0 = np.sum((z <= self.z0).astype(int))
             n1 = np.sum((z >= self.z1).astype(int))
-            message = '{} atoms have gone over top wall; {} atoms have gone below bottom wall'.format(n0, n1)
-            print z
-            print z * bohr2angs
+            message = '{} atoms have gone below bottom wall; {} atoms have gone above top wall'.format(n0, n1)
             raise ValueError(message)
     
     @abstractmethod
