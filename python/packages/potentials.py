@@ -44,7 +44,10 @@ class PotentialEnergySurface(object):
         if np.any(z <= self.z0) or np.any(z >= self.z1):
             n0 = np.sum((z <= self.z0).astype(int))
             n1 = np.sum((z >= self.z1).astype(int))
-            raise ValueError('{} molecules have gone over top wall and {} molecules have gone below bottom wall')
+            message = '{} atoms have gone over top wall; {} atoms have gone below bottom wall'.format(n0, n1)
+            print z
+            print z * bohr2angs
+            raise ValueError(message)
     
     @abstractmethod
     def potential(self, r, checked_confined=False):
@@ -58,7 +61,7 @@ class PotentialEnergySurface(object):
     def get_r_equil(self):
         pass
     
-    def force(self, r, check_pbc=False):
+    def force(self, r, checked_confined=False):
         return -self.gradient(r, checked_confined)
     
     def update_cell_su(self, c):
@@ -81,11 +84,11 @@ class PotentialEnergySurface(object):
 
 class Morse1D(PotentialEnergySurface):
     
-    def __init__(self, w, c, au=False):
+    def __init__(self, w, c, au=True):
         # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
         if not au:
-            w /= bohr2angs
-            c /= bohr2angs
+            w *= angs2bohr
+            c *= angs2bohr
         self.zeta = 3.85 * angs2bohr
         self.a = 0.92 * bohr2angs       # 0.92 AA^-1 converted to a0^-1
         self.D = 57.8E-3 * ev2har
@@ -112,15 +115,14 @@ class Morse1D(PotentialEnergySurface):
 
 class LennardJones1D(PotentialEnergySurface):
     
-    def __init__(self, w, c, au=False):
+    def __init__(self, w, c, au=True):
         # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
         if not au:
-            w /= bohr2angs
-            c /= bohr2angs
+            w *= angs2bohr
+            c *= angs2bohr
         self.sigma = 3.0 / bohr2angs
         self.factor = 5./12.
         self.epsilon = 2.092 / L * kJ2eV * ev2har # 2.092 kJ/mol, converted to Ha
-        self.w = w
         super(LennardJones1D, self).__init__(w, c)
     
     def potential(self, z, checked_confined=False):

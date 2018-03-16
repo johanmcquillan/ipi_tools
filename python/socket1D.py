@@ -74,7 +74,6 @@ while run_flag == True:
             first = False
         else:
             pes.update_cell(cell_h[8])
-        
         # Unpack inverse of cell matrix
         cell_ih = fsoc.recv(9*8)
         
