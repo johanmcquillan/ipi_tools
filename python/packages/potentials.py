@@ -129,16 +129,16 @@ class LennardJones1D(PotentialEnergySurface):
         if not checked_confined:
             self.check_confined(z)
         V = np.zeros(z.shape)
-        V = self.epsilon *  (self.factor*(self.sigma/(z - self.z0))**9 + (self.sigma/(z - self.z0))**3 + 
-                             self.factor*(self.sigma/(self.z1 - z))**9 + (self.sigma/(self.z1 - z))**3)
+        V = self.epsilon *  (self.factor*(self.sigma/(z - self.z0))**9 - (self.sigma/(z - self.z0))**3 + 
+                             self.factor*(self.sigma/(self.z1 - z))**9 - (self.sigma/(self.z1 - z))**3)
         return V
     
     def gradient(self, z, checked_confined=False):
         if not checked_confined:
             self.check_confined(z)
         F = np.zeros(z.shape)
-        F = self.epsilon *  (-self.factor*9.*self.sigma**9/(z - self.z0)**10 - 3.*self.sigma**3/(z - self.z0)**4 + 
-                              self.factor*9.*self.sigma**9/(self.z1 - z)**10 + 3.*self.sigma**3/(self.z1 - z)**4)
+        F = self.epsilon * (-self.factor*9.*self.sigma**9/(z - self.z0)**10 + 3.*self.sigma**3/(z - self.z0)**4 + 
+                             self.factor*9.*self.sigma**9/(self.z1 - z)**10 - 3.*self.sigma**3/(self.z1 - z)**4)
         return F
     
     @property
