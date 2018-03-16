@@ -84,7 +84,7 @@ class PotentialEnergySurface(object):
 class Morse1D(PotentialEnergySurface):
     
     def __init__(self, w, c, au=True):
-        # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
+        # Parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
         if not au:
             w *= angs2bohr
             c *= angs2bohr
@@ -98,7 +98,7 @@ class Morse1D(PotentialEnergySurface):
             self.check_confined(z)
         V = np.zeros(z.shape)
         V = self.D * (( 1.0 - np.exp(-self.a*(z - self.z0 - self.zeta)))**2 +
-                    (   1.0 - np.exp(-self.a*(self.z1 - z - self.zeta)))**2 - 2.0)
+                      ( 1.0 - np.exp(-self.a*(self.z1 - z - self.zeta)))**2 - 2.0)
         return V
     
     def gradient(self, z, checked_confined=False):
@@ -116,7 +116,7 @@ class Morse1D(PotentialEnergySurface):
 class LennardJones1D(PotentialEnergySurface):
     
     def __init__(self, w, c, au=True):
-        # parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
+        # Parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
         if not au:
             w *= angs2bohr
             c *= angs2bohr
@@ -129,8 +129,8 @@ class LennardJones1D(PotentialEnergySurface):
         if not checked_confined:
             self.check_confined(z)
         V = np.zeros(z.shape)
-        V = self.epsilon *  (self.factor*(self.sigma/(z - self.z0))**9 - (self.sigma/(z - self.z0))**3 + 
-                             self.factor*(self.sigma/(self.z1 - z))**9 - (self.sigma/(self.z1 - z))**3)
+        V = self.epsilon * (self.factor*(self.sigma/(z - self.z0))**9 - (self.sigma/(z - self.z0))**3 + 
+                            self.factor*(self.sigma/(self.z1 - z))**9 - (self.sigma/(self.z1 - z))**3)
         return V
     
     def gradient(self, z, checked_confined=False):
@@ -139,6 +139,37 @@ class LennardJones1D(PotentialEnergySurface):
         F = np.zeros(z.shape)
         F = self.epsilon * (-self.factor*9.*self.sigma**9/(z - self.z0)**10 + 3.*self.sigma**3/(z - self.z0)**4 + 
                              self.factor*9.*self.sigma**9/(self.z1 - z)**10 - 3.*self.sigma**3/(self.z1 - z)**4)
+        return F
+    
+    @property
+    def r_eq(self):
+        return self.sigma
+
+class LennardJones1DStanley(PotentialEnergySurface):
+    
+    def __init__(self, w, c, au=True):
+        # Parameters from Kumar et al., Phys. Rev. E, 72, 5, 051503 (2016)
+        if not au:
+            w *= angs2bohr
+            c *= angs2bohr
+        self.sigma = 2.5 * angs2bohr
+        self.epsilon = 1.25 / L * kJ2eV * ev2har # 1.25 kJ/mol, converted to Ha
+        super(LennardJones1D, self).__init__(w, c)
+    
+    def potential(self, z, checked_confined=False):
+        if not checked_confined:
+            self.check_confined(z)
+        V = np.zeros(z.shape)
+        V = 4 * self.epsilon * ((self.sigma/(z - self.z0))**9 - (self.sigma/(z - self.z0))**3 + 
+                                (self.sigma/(self.z1 - z))**9 - (self.sigma/(self.z1 - z))**3)
+        return V
+    
+    def gradient(self, z, checked_confined=False):
+        if not checked_confined:
+            self.check_confined(z)
+        F = np.zeros(z.shape)
+        F = 4 * self.epsilon * (-9.*self.sigma**9/(z - self.z0)**10 + 3.*self.sigma**3/(z - self.z0)**4 + 
+                                 9.*self.sigma**9/(self.z1 - z)**10 - 3.*self.sigma**3/(self.z1 - z)**4)
         return F
     
     @property
