@@ -223,7 +223,7 @@ class LennardJones1DStanley(PotentialEnergySurface):
     
     @property
     def r_eq(self):
-        return np.power(6, 1./6.) * self.sigma
+        return np.power(3, 1./6.) * self.sigma
     
     @property
     def effective_ow(self):
