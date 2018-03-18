@@ -114,7 +114,6 @@ class PotentialEnergySurface(object):
     def gradient(self, z):
         return self.gradient_lower(z) + self.gradient_upper(z)
     
-    @confine
     def force(self, z):
         return -self.gradient(z, checked_confined)
     
