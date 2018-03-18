@@ -14,17 +14,27 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 # And I don't like moles either
 
 L = 6.022E23                # Avogadro's Number
-bohr2angs = 0.52918         # Convert length to AU
+bohr2angs = 0.52918         # Length conversion
 angs2bohr = 1. / bohr2angs
-har2ev = 27.2114            # Convert energy to AU
+har2ev = 27.2114            # Energy conversion
 ev2har = 1. / har2ev
-foc2au = ev2har * bohr2angs # Convert force to AU
+foc2au = ev2har * bohr2angs # Force conversion
 au2foc = 1. / foc2au
-kJ2eV = 6.241509125E21      # Convert energy to eV
+kJ2eV = 6.241509125E21
 
 sigma_TIP5P = 3.12 * angs2bohr
 
 class PotentialEnergySurface1D(object):
+    '''Abstract class for applying a one-dimensional confining potential to simulate two walls.
+    
+    Units are in Atomic Units (because that's what i-PI uses, I would have chosen otherwise.
+    
+    Attributes:
+        w (float): Width of confinement; Distance between the two walls
+        c (float): Height of simulation cell
+        z0 (float): Position of lower wall
+        z1 (float): Position of upper wall
+    '''
     __metaclass__ = ABCMeta
     
     def __init__(self, w, c):
