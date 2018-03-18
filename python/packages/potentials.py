@@ -24,7 +24,7 @@ kJ2eV = 6.241509125E21      # Convert energy to eV
 
 sigma_TIP5P = 3.12 * angs2bohr
 
-class PotentialEnergySurface(object):
+class PotentialEnergySurface1D(object):
     __metaclass__ = ABCMeta
     
     def __init__(self, w, c):
@@ -221,7 +221,7 @@ class LennardJones1DStanley(PotentialEnergySurface):
 
 def potential_names():
     return [name for name, member in inspect.getmembers(sys.modules[__name__])
-            if inspect.isclass(member) and name not in ['ABCMeta', 'abstractproperty', 'PotentialEnergySurface']]
+            if inspect.isclass(member) and name not in ['ABCMeta', 'abstractproperty', 'PotentialEnergySurface1D']]
 
 def potential_text():
     text = ''
