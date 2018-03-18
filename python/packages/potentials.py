@@ -165,9 +165,9 @@ class LennardJones1D(PotentialEnergySurface):
         if not au:
             w *= angs2bohr
             c *= angs2bohr
-        self.sigma = 3.0 / bohr2angs
+        self.sigma = 3.0 * angs2bohr
         self.factor = 5./12.
-        self.epsilon = 2.092 / L * kJ2eV * ev2har # 2.092 kJ/mol, converted to Ha
+        self.epsilon = 21.7E-3 * ev2har
         super(LennardJones1D, self).__init__(w, c)
     
     def potential_form(self, dz):
