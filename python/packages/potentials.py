@@ -56,10 +56,10 @@ class PotentialEnergySurface(object):
    
     def confine(function):
         @wraps(function)
-        def confine_wrapper(self, z, checked_confined=False, *args, **kwargs):
-        if not checked_confined:
-            self.check_confined(z)
-            return function(self, z, *args, **kwargs)
+        def confine_wrapper(self, z, checked_confined=False):
+            if not checked_confined:
+                self.check_confined(z)
+            return function(self, z)
         return confine_wrapper
     
     @abstractmethod
@@ -95,19 +95,19 @@ class PotentialEnergySurface(object):
     def gradient_lower(self, z):
         return self.gradient_form(z - self.z0)
     
-    def gradient_upper(slef, z):
+    def gradient_upper(self, z):
         return -self.gradient_form(self.z1 - z)
     
     @confine
-    def potential(self, z, checked_confined=False):
+    def potential(self, z):
         return self.potential_lower(z) + self.potential_upper(z)
     
     @confine
-    def gradient(self, z, checked_confined=False):
+    def gradient(self, z):
         return self.gradient_lower(z) + self.gradient_upper(z)
     
     @confine
-    def force(self, r, checked_confined=False):
+    def force(self, r):
         return -self.gradient(r, checked_confined)
     
     def update_cell_su(self, c):
