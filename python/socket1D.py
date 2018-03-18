@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import socket
-import struct
-import argparse
-import textwrap
 import inspect
 import numpy as np
+import socket
+import struct
+import textwrap
+from argparse import ArgumentParser, RawTextHelpFormatter
 from packages import potentials
 
 # Get list of implemented external potentials from module
@@ -20,7 +20,7 @@ for p in sorted(potential_names):
 potential_help += potential_text
 
 # Get arguments
-parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
 parser.add_argument('V', help=textwrap.dedent(potential_help))
 parser.add_argument('port', metavar='P', help='Port number (if INET) or address name (if UNIX)')
 parser.add_argument('ip', nargs='?', default=None, help='IP address - if given, opens an INET socket, else a UNIX socket')
