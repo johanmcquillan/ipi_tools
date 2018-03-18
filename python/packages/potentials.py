@@ -1,5 +1,9 @@
 
 import numpy as np
+import matplotlib.pyplot as plt
+import inspect
+import textwrap
+import sys
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 # i-PI uses atomic units
@@ -99,7 +103,7 @@ class Morse1D(PotentialEnergySurface):
             w *= angs2bohr
             c *= angs2bohr
         self.zeta = 3.85 * angs2bohr
-        self.a = 0.92 * bohr2angs       # 0.92 AA^-1 converted to a0^-1
+        self.a = 0.92 / angs2bohr       # 0.92 AA^-1 converted to a0^-1
         self.D = 57.8E-3 * ev2har
         super(Morse1D, self).__init__(w, c)
     
@@ -125,7 +129,7 @@ class Morse1D(PotentialEnergySurface):
     
     @property
     def effective_ow(self):
-        return self.zeta - np.log(2) / a
+        return self.zeta - np.log(2) / self.a
 
 class LennardJones1D(PotentialEnergySurface):
     
@@ -197,4 +201,52 @@ class LennardJones1DStanley(PotentialEnergySurface):
     @property
     def effective_ow(self):
         return self.sigma
+
+def potential_names():
+    return [name for name, member in inspect.getmembers(sys.modules[__name__])
+            if inspect.isclass(member) and name not in ['ABCMeta', 'abstractproperty', 'PotentialEnergySurface']]
+
+def potential_text():
+    text = ''
+    for p in sorted(potential_names()):
+        text += '\n    '+p
+    return textwrap.dedent(text)
+
+def help_text():
+    return textwrap.dedent('Name of external potential - possible options are below:'+potential_text())
+
+def get_potential(name):
+    try:
+        if name not in potential_names():
+            raise KeyError
+        potential = globals()[name]
+        return potential
+    except KeyError:
+        raise ValueError('Must give valid external potential name. Options are:'+potential_text())
+
+def plot_potentials(w, c, au=True):
+    colors = ['b', 'g', 'r']
+    
+    z0 = (c - w)/2.
+    z1 = (c + w)/2.
+    r = np.linspace(z0, z1, 200)[1:-1]
+    fig, ax = plt.subplots(1)
+    
+    i = 0
+    for name in potential_names():
+        pot = get_potential(name)(w, c, au=au) 
+        if au:
+            V = pot.potential(r)
+            w_eff = pot.effective_ow
+        else:
+            V = pot.potential_su(r)
+            w_eff = pot.effective_ow_su
+        ax.plot(r, V, c=colors[i], label=name)
+        
+        ax.axvline(c/2.+w_eff/2, c=colors[i], linestyle='--', alpha=0.2)
+        ax.axvline(c/2.-w_eff/2, c=colors[i], linestyle='--', alpha=0.2)
+        i += 1
+    ax.set_ylim([0, 200])
+    ax.legend()
+    plt.show()
 
