@@ -77,6 +77,14 @@ class PotentialEnergySurface(object):
     @abstractproperty
     def r_eq(self):
         pass
+   
+    @property
+    def effective_width(self):
+        return self.w - (self.effective_ow + sigma_TIP5P)/2.
+    
+    @property
+    def effective_width_su(self):
+        return self.effective_width * bohr2angs
     
     @property
     def effective_ow_su(self):
@@ -156,6 +164,7 @@ class Morse1D(PotentialEnergySurface):
     
     @property
     def effective_ow(self):
+        #return self.zeta
         return self.zeta - np.log(2) / self.a
 
 class LennardJones1D(PotentialEnergySurface):
@@ -244,11 +253,14 @@ def plot_potentials(au=True):
         if au:
             V = pot.potential_form(r)
         else:
-            V = pot.potential_form_su(r)
+            V = pot.potential_form_su(r)*1E3
         ax.plot(r, V, c=colors[i], label=name)
         i += 1
+    ax.axhline(0, c='k', alpha=0.2)
     ax.set_xlim([0, 10])
-    ax.set_ylim([0, 250])
+    ax.set_ylim([-150, 500])
+    ax.set_xlabel(r'$r$ [$\AA$]')
+    ax.set_ylabel(r'$V(r)$ [meV]')
     ax.legend()
     plt.show()
 
@@ -265,16 +277,17 @@ def plot_wells(w, c, au=True):
         pot = get_potential(name)(w, c, au=au) 
         if au:
             V = pot.potential(r, checked_confined=True)
-            w_eff = pot.effective_ow
+            w_eff = pot.effective_width
         else:
-            V = pot.potential_su(r, checked_confined=True)
-            w_eff = pot.effective_ow_su
+            V = pot.potential_su(r, checked_confined=True)*1E3
+            w_eff = pot.effective_width_su
+        V -= np.min(V)
         ax.plot(r, V, c=colors[i], label=name)
         
-        ax.axvline(c/2.+w_eff/2, c=colors[i], linestyle='--', alpha=0.2)
-        ax.axvline(c/2.-w_eff/2, c=colors[i], linestyle='--', alpha=0.2)
+        ax.axvline(c/2.+w_eff/2., c=colors[i], linestyle='--', alpha=0.2)
+        ax.axvline(c/2.-w_eff/2., c=colors[i], linestyle='--', alpha=0.2)
         i += 1
-    ax.set_ylim([0, 200])
+    ax.set_ylim([0, 1500])
     ax.legend()
     plt.show()
 
