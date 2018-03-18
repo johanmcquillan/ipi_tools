@@ -58,7 +58,7 @@ class PotentialEnergySurface(object):
         pass
     
     @abstractproperty
-    def effective_ow(self)
+    def effective_ow(self):
         pass
     
     @abstractproperty
@@ -66,7 +66,7 @@ class PotentialEnergySurface(object):
         pass
     
     @property
-    def effective_ow_su(self)
+    def effective_ow_su(self):
         return self.effective_ow * bohr2angs
     
     @property
