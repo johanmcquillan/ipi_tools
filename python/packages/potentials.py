@@ -155,8 +155,8 @@ class Morse1D(PotentialEnergySurface):
         return self.D * ((1. - np.exp(-self.a * (dz - self.zeta)))**2 - 1.) 
     
     def gradient_form(self, dz):
-        return 2 * self.a * self.D * (  np.exp(-self.a * (dz - self.zeta)) - 
-                                        np.exp(-2 * self.a * (dz - self.zeta)))
+        x = np.exp(-self.a * (dz - self.zeta))
+        return 2 * self.a * self.D * x * (1. - x)
     
     @property
     def r_eq(self):
@@ -180,7 +180,8 @@ class LennardJones1D(PotentialEnergySurface):
         super(LennardJones1D, self).__init__(w, c)
     
     def potential_form(self, dz):
-        return self.epsilon * (self.factor*(self.sigma/dz)**9 - (self.sigma/dz)**3) 
+        x = (self.sigma / dz)**3
+        return self.epsilon * (self.factor*x**3 - x) 
     
     def gradient_form(self, dz):
         return self.epsilon * (-self.factor*9.*self.sigma**9/dz**10 + 3.*self.sigma**3/dz**4) 
@@ -205,7 +206,8 @@ class LennardJones1DStanley(PotentialEnergySurface):
         super(LennardJones1DStanley, self).__init__(w, c)
     
     def potential_form(self, dz):
-        return 4 * self.epsilon * ((self.sigma/dz)**9 - (self.sigma/dz)**3) 
+        x = (self.sigma / dz)**3
+        return 4 * self.epsilon * (x**3 - x) 
     
     def gradient_form(self, dz):
         return 4 * self.epsilon * (-9.*self.sigma**9/dz**10 + 3.*self.sigma**3/dz**4) 
