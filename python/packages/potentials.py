@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import inspect
 import textwrap
 import sys
+from functools import wraps
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 # i-PI uses atomic units
@@ -52,13 +53,21 @@ class PotentialEnergySurface(object):
             n1 = np.sum((z >= self.z1).astype(int))
             message = '{} atoms have gone below bottom wall; {} atoms have gone above top wall'.format(n0, n1)
             raise ValueError(message)
+   
+    def confine(function):
+        @wraps(function)
+        def confine_wrapper(self, z, checked_confined=False, *args, **kwargs):
+        if not checked_confined:
+            self.check_confined(z)
+            return function(self, z, *args, **kwargs)
+        return confine_wrapper
     
     @abstractmethod
-    def potential(self, r, checked_confined=False):
+    def potential_form(self, dz):
         pass
     
     @abstractmethod
-    def gradient(self, r, checked_confined=False):
+    def gradient_form(self, dz):
         pass
     
     @abstractproperty
@@ -77,6 +86,27 @@ class PotentialEnergySurface(object):
     def r_eq_su(self):
         return self.r_eq * bohr2angs
     
+    def potential_lower(self, z):
+        return self.potential_form(z - self.z0)
+    
+    def potential_upper(self, z):
+        return self.potential_form(self.z1 - z)
+    
+    def gradient_lower(self, z):
+        return self.gradient_form(z - self.z0)
+    
+    def gradient_upper(slef, z):
+        return -self.gradient_form(self.z1 - z)
+    
+    @confine
+    def potential(self, z, checked_confined=False):
+        return self.potential_lower(z) + self.potential_upper(z)
+    
+    @confine
+    def gradient(self, z, checked_confined=False):
+        return self.gradient_lower(z) + self.gradient_upper(z)
+    
+    @confine
     def force(self, r, checked_confined=False):
         return -self.gradient(r, checked_confined)
     
@@ -107,22 +137,13 @@ class Morse1D(PotentialEnergySurface):
         self.D = 57.8E-3 * ev2har
         super(Morse1D, self).__init__(w, c)
     
-    def potential(self, z, checked_confined=False):
-        if not checked_confined:
-            self.check_confined(z)
-        V = np.zeros(z.shape)
-        V = self.D * (( 1.0 - np.exp(-self.a*(z - self.z0 - self.zeta)))**2 +
-                      ( 1.0 - np.exp(-self.a*(self.z1 - z - self.zeta)))**2 - 2.0)
-        return V
+    def potential_form(self, dz):
+        return self.D * ((1. - np.exp(-self.a * (dz - self.zeta)))**2 - 1.) 
     
-    def gradient(self, z, checked_confined=False):
-        if not checked_confined:
-            self.check_confined(z)
-        F = np.zeros(z.shape)
-        F = 2 * self.a * self.D * ( np.exp(-self.a*(z - self.z0 - self.zeta)) - np.exp(-2*self.a*(z - self.z0 - self.zeta)) - 
-                                    np.exp(-self.a*(self.z1 - z - self.zeta)) + np.exp(-2*self.a*(self.z1 - z - self.zeta)))
-        return F
-   
+    def gradient_form(self, dz):
+        return 2 * self.a * self.D * (  np.exp(-self.a * (dz - self.zeta)) - 
+                                        np.exp(-2 * self.a * (dz - self.zeta)))
+    
     @property
     def r_eq(self):
         return self.zeta
@@ -143,21 +164,11 @@ class LennardJones1D(PotentialEnergySurface):
         self.epsilon = 2.092 / L * kJ2eV * ev2har # 2.092 kJ/mol, converted to Ha
         super(LennardJones1D, self).__init__(w, c)
     
-    def potential(self, z, checked_confined=False):
-        if not checked_confined:
-            self.check_confined(z)
-        V = np.zeros(z.shape)
-        V = self.epsilon * (self.factor*(self.sigma/(z - self.z0))**9 - (self.sigma/(z - self.z0))**3 + 
-                            self.factor*(self.sigma/(self.z1 - z))**9 - (self.sigma/(self.z1 - z))**3)
-        return V
+    def potential_form(self, dz):
+        return self.epsilon * (self.factor*(self.sigma/dz)**9 - (self.sigma/dz)**3) 
     
-    def gradient(self, z, checked_confined=False):
-        if not checked_confined:
-            self.check_confined(z)
-        F = np.zeros(z.shape)
-        F = self.epsilon * (-self.factor*9.*self.sigma**9/(z - self.z0)**10 + 3.*self.sigma**3/(z - self.z0)**4 + 
-                             self.factor*9.*self.sigma**9/(self.z1 - z)**10 - 3.*self.sigma**3/(self.z1 - z)**4)
-        return F
+    def gradient_form(self, dz):
+        return self.epsilon * (-self.factor*9.*self.sigma**9/dz**10 + 3.*self.sigma**3/dz**4) 
     
     @property
     def r_eq(self):
@@ -178,21 +189,11 @@ class LennardJones1DStanley(PotentialEnergySurface):
         self.epsilon = 1.25 / L * kJ2eV * ev2har # 1.25 kJ/mol, converted to Ha
         super(LennardJones1DStanley, self).__init__(w, c)
     
-    def potential(self, z, checked_confined=False):
-        if not checked_confined:
-            self.check_confined(z)
-        V = np.zeros(z.shape)
-        V = 4 * self.epsilon * ((self.sigma/(z - self.z0))**9 - (self.sigma/(z - self.z0))**3 + 
-                                (self.sigma/(self.z1 - z))**9 - (self.sigma/(self.z1 - z))**3)
-        return V
+    def potential_form(self, dz):
+        return 4 * self.epsilon * ((self.sigma/dz)**9 - (self.sigma/dz)**3) 
     
-    def gradient(self, z, checked_confined=False):
-        if not checked_confined:
-            self.check_confined(z)
-        F = np.zeros(z.shape)
-        F = 4 * self.epsilon * (-9.*self.sigma**9/(z - self.z0)**10 + 3.*self.sigma**3/(z - self.z0)**4 + 
-                                 9.*self.sigma**9/(self.z1 - z)**10 - 3.*self.sigma**3/(self.z1 - z)**4)
-        return F
+    def gradient_form(self, dz):
+        return 4 * self.epsilon * (-9.*self.sigma**9/dz**10 + 3.*self.sigma**3/dz**4) 
     
     @property
     def r_eq(self):
@@ -236,10 +237,10 @@ def plot_potentials(w, c, au=True):
     for name in potential_names():
         pot = get_potential(name)(w, c, au=au) 
         if au:
-            V = pot.potential(r)
+            V = pot.potential(r, checked_confined=True)
             w_eff = pot.effective_ow
         else:
-            V = pot.potential_su(r)
+            V = pot.potential_su(r, checked_confined=True)
             w_eff = pot.effective_ow_su
         ax.plot(r, V, c=colors[i], label=name)
         
