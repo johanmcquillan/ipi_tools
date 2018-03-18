@@ -107,8 +107,8 @@ class PotentialEnergySurface(object):
         return self.gradient_lower(z) + self.gradient_upper(z)
     
     @confine
-    def force(self, r):
-        return -self.gradient(r, checked_confined)
+    def force(self, z):
+        return -self.gradient(z, checked_confined)
     
     def update_cell_su(self, c):
         self.update_cell(c * angs2bohr)
@@ -116,14 +116,20 @@ class PotentialEnergySurface(object):
     def pbc_su(self, z):
         return self.pbc(z * angs2bohr)
     
-    def potential_su(self, r, checked_confined=False):
-        return self.potential(r * angs2bohr, checked_confined) * au2foc
+    def potential_form_su(self, z):
+        return self.potential_form(z * angs2bohr) * au2foc
     
-    def gradient_su(self, r, checked_confined=False):
-        return self.gradient(r * angs2bohr, checked_confined) * au2foc
+    def gradient_form_su(self, z):
+        return self.gradient_form(z * angs2bohr) * au2foc
     
-    def force_su(self, r, checked_confined=False):
-        return self.force(r * angs2bohr, checked_confined) * au2foc 
+    def potential_su(self, z, checked_confined=False):
+        return self.potential(z * angs2bohr, checked_confined) * au2foc
+    
+    def gradient_su(self, z, checked_confined=False):
+        return self.gradient(z * angs2bohr, checked_confined) * au2foc
+    
+    def force_su(self, z, checked_confined=False):
+        return self.force(z * angs2bohr, checked_confined) * au2foc 
 
 class Morse1D(PotentialEnergySurface):
     
@@ -225,7 +231,28 @@ def get_potential(name):
     except KeyError:
         raise ValueError('Must give valid external potential name. Options are:'+potential_text())
 
-def plot_potentials(w, c, au=True):
+def plot_potentials(au=True):
+    colors = ['b', 'g', 'r']
+    
+    r = np.linspace(0, 10, 200)[1:-1]
+    
+    fig, ax = plt.subplots(1)
+    
+    i = 0
+    for name in potential_names():
+        pot = get_potential(name)(5, 30., au=au)
+        if au:
+            V = pot.potential_form(r)
+        else:
+            V = pot.potential_form_su(r)
+        ax.plot(r, V, c=colors[i], label=name)
+        i += 1
+    ax.set_xlim([0, 10])
+    ax.set_ylim([0, 250])
+    ax.legend()
+    plt.show()
+
+def plot_wells(w, c, au=True):
     colors = ['b', 'g', 'r']
     
     z0 = (c - w)/2.
