@@ -17,6 +17,8 @@ foc2au = ev2har * bohr2angs # Convert force to AU
 au2foc = 1. / foc2au
 kJ2eV = 6.241509125E21      # Convert energy to eV
 
+sigma_TIP5P = 3.12 * angs2bohr
+
 class PotentialEnergySurface(object):
     __metaclass__ = ABCMeta
     
@@ -56,9 +58,17 @@ class PotentialEnergySurface(object):
         pass
     
     @abstractproperty
+    def effective_ow(self)
+        pass
+    
+    @abstractproperty
     def r_eq(self):
         pass
-
+    
+    @property
+    def effective_ow_su(self)
+        return self.effective_ow * bohr2angs
+    
     @property
     def r_eq_su(self):
         return self.r_eq * bohr2angs
@@ -112,6 +122,10 @@ class Morse1D(PotentialEnergySurface):
     @property
     def r_eq(self):
         return self.zeta
+    
+    @property
+    def effective_ow(self):
+        return self.zeta - np.log(2) / a
 
 class LennardJones1D(PotentialEnergySurface):
     
@@ -143,7 +157,11 @@ class LennardJones1D(PotentialEnergySurface):
     
     @property
     def r_eq(self):
-        return np.power(6 * self.factor, 1./6.) * self.sigma
+        return np.power(3. * self.factor, 1./6.) * self.sigma
+    
+    @property
+    def effective_ow(self):
+        return np.power(self.factor, 1./6.) * self.sigma
 
 class LennardJones1DStanley(PotentialEnergySurface):
     
@@ -175,3 +193,8 @@ class LennardJones1DStanley(PotentialEnergySurface):
     @property
     def r_eq(self):
         return np.power(6, 1./6.) * self.sigma
+    
+    @property
+    def effective_ow(self):
+        return self.sigma
+
