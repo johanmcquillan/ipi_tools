@@ -1,9 +1,9 @@
 
-import numpy as np
-import matplotlib.pyplot as plt
 import inspect
-import textwrap
+import matplotlib.pyplot as plt
+import numpy as np
 import sys
+import textwrap
 from functools import wraps
 from abc import ABCMeta, abstractmethod, abstractproperty
 

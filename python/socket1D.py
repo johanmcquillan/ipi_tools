@@ -4,33 +4,19 @@ import inspect
 import numpy as np
 import socket
 import struct
-import textwrap
 from argparse import ArgumentParser, RawTextHelpFormatter
-from packages import potentials
-
-# Get list of implemented external potentials from module
-potential_names = []
-for name, member in inspect.getmembers(potentials):
-    if inspect.isclass(member) and name not in ['ABCMeta', 'PotentialEnergySurface']:
-        potential_names.append(name)
-potential_help = 'External potential name - possible options are below:'
-potential_text = ''
-for p in sorted(potential_names):
-    potential_text += '\n    {}'.format(p)
-potential_help += potential_text
+from packages.potentials import help_text, get_potential
 
 # Get arguments
 parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
-parser.add_argument('V', help=textwrap.dedent(potential_help))
+parser.add_argument('V', help=help_text())
 parser.add_argument('port', metavar='P', help='Port number (if INET) or address name (if UNIX)')
 parser.add_argument('ip', nargs='?', default=None, help='IP address - if given, opens an INET socket, else a UNIX socket')
 args = parser.parse_args()
 
 # Check external potential is valid
 try:
-    PES = potentials.__dict__[args.V]
-except KeyError:
-    raise ValueError('Must give valid external potential name. Options are:'+potential_text)
+    PES = get_potential(args.V)
 
 # Check if INET or UNIX socket
 # If INET, ensure IP and port are valid
