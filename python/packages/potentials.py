@@ -117,13 +117,13 @@ class PotentialEnergySurface(object):
         return self.pbc(z * angs2bohr)
     
     def potential_form_su(self, z):
-        return self.potential_form(z * angs2bohr) * au2foc
+        return self.potential_form(z * angs2bohr) * har2ev
     
     def gradient_form_su(self, z):
         return self.gradient_form(z * angs2bohr) * au2foc
     
     def potential_su(self, z, checked_confined=False):
-        return self.potential(z * angs2bohr, checked_confined) * au2foc
+        return self.potential(z * angs2bohr, checked_confined) * har2ev
     
     def gradient_su(self, z, checked_confined=False):
         return self.gradient(z * angs2bohr, checked_confined) * au2foc
