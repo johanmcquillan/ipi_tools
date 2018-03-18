@@ -23,17 +23,17 @@ class PotentialEnergySurface(object):
     __metaclass__ = ABCMeta
     
     def __init__(self, w, c):
-        self.w = w
+        self.w = float(w)
         self.update_cell(c)
     
     def update_cell(self, c):
-        if self.w >= c / 2:
+        if self.w >= c / 2.:
             message = 'Confinement width must be less than half of cell height\n'
             message += 'Conf. width = {} Angs; height / 2 = {} Angs'.format(self.w*bohr2angs, c*bohr2angs)
             raise ValueError(message)
-        self.c = c
-        self.z0 = (self.c - self.w)/2
-        self.z1 = (self.c + self.w)/2
+        self.c = float(c)
+        self.z0 = (self.c - self.w)/2.
+        self.z1 = (self.c + self.w)/2.
     
     def pbc(self, z):
         while np.any(z < 0):
@@ -89,7 +89,7 @@ class PotentialEnergySurface(object):
         return self.gradient(r * angs2bohr, checked_confined) * au2foc
     
     def force_su(self, r, checked_confined=False):
-        return self.force(r * angs2bohr, checked_confined) * au2foc
+        return self.force(r * angs2bohr, checked_confined) * au2foc 
 
 class Morse1D(PotentialEnergySurface):
     
@@ -172,7 +172,7 @@ class LennardJones1DStanley(PotentialEnergySurface):
             c *= angs2bohr
         self.sigma = 2.5 * angs2bohr
         self.epsilon = 1.25 / L * kJ2eV * ev2har # 1.25 kJ/mol, converted to Ha
-        super(LennardJones1D, self).__init__(w, c)
+        super(LennardJones1DStanley, self).__init__(w, c)
     
     def potential(self, z, checked_confined=False):
         if not checked_confined:
