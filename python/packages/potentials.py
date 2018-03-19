@@ -148,7 +148,7 @@ class PotentialEnergySurface1D(object):
     def force_su(self, z, checked_confined=False):
         return self.force(z * angs2bohr, checked_confined) * au2foc 
 
-class Morse1D(PotentialEnergySurface):
+class Morse1D(PotentialEnergySurface1D):
     
     def __init__(self, w, c, au=True):
         # Parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
@@ -176,7 +176,7 @@ class Morse1D(PotentialEnergySurface):
         #return self.zeta
         return self.zeta - np.log(2) / self.a
 
-class LennardJones1D(PotentialEnergySurface):
+class LennardJones1D(PotentialEnergySurface1D):
     
     def __init__(self, w, c, au=True):
         # Parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
@@ -203,7 +203,7 @@ class LennardJones1D(PotentialEnergySurface):
     def effective_ow(self):
         return np.power(self.factor, 1./6.) * self.sigma
 
-class LennardJones1DStanley(PotentialEnergySurface):
+class LennardJones1DStanley(PotentialEnergySurface1D):
     
     def __init__(self, w, c, au=True):
         # Parameters from Kumar et al., Phys. Rev. E, 72, 5, 051503 (2005)
