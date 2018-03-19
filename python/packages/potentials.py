@@ -42,7 +42,8 @@ class PotentialEnergySurface1D(object):
     
     def __init__(self, w, c):
         self.w = float(w)
-        self.update_cell(float(c))
+        self.update_cell(c)
+        self.ow = self.calc_ow()
     
     def update_cell(self, c):
         if self.w > c / 2.:
@@ -72,10 +73,6 @@ class PotentialEnergySurface1D(object):
         guess = self.r_eq / 2.
         return fsolve(function, guess)
     
-    @property
-    def w_eff(self):
-        return self.w - (sigma_TIP5P + self.ow) / 2.
-    
     def confine(function):
         @wraps(function)
         def confine_wrapper(self, z, checked_confined=False):
@@ -100,26 +97,6 @@ class PotentialEnergySurface1D(object):
     def r_eq(self):
         pass
     
-    @property
-    def effective_width(self):
-        return self.w - (self.effective_ow + sigma_TIP5P)/2. 
-    
-    @property
-    def w_eff_su(self):
-        return self.w_eff * bohr2angs
-    
-    @property
-    def effective_width_su(self):
-        return self.effective_width * bohr2angs
-    
-    @property
-    def effective_ow_su(self):
-        return self.effective_ow * bohr2angs
-    
-    @property
-    def r_eq_su(self):
-        return self.r_eq * bohr2angs
-    
     def potential_lower(self, z):
         return self.potential_form(z - self.z0)
     
@@ -142,6 +119,22 @@ class PotentialEnergySurface1D(object):
     
     def force(self, z):
         return -self.gradient(z, checked_confined)
+
+    @property
+    def w_eff(self):
+        return self.w - (self.ow + sigma_TIP5P) / 2.
+
+    @property
+    def w_eff_su(self):
+        return self.w_eff * bohr2angs
+    
+    @property
+    def r_eq_su(self):
+        return self.r_eq * bohr2angs
+
+    @property
+    def ow_su(self):
+        return self.ow * bohr2angs
     
     def update_cell_su(self, c):
         self.update_cell(c * angs2bohr)
@@ -168,14 +161,13 @@ class Morse1D(PotentialEnergySurface1D):
     
     def __init__(self, w, c, au=True):
         # Parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
-        if not au:
-            w *= angs2bohr
-            c *= angs2bohr
         self.zeta = 3.85 * angs2bohr
         self.a = 0.92 / angs2bohr       # 0.92 AA^-1 converted to a0^-1
         self.D = 57.8E-3 * ev2har
-        self.ow = self.calc_ow()
-        super(Morse1D, self).__init__(w, c)
+        if au:
+            super(Morse1D, self).__init__(w, c)
+        else:
+            super(Morse1D, self).__init__(w*angs2bohr, c*angs2bohr)
     
     def potential_form(self, dz):
         return self.D * ((1. - np.exp(-self.a * (dz - self.zeta)))**2 - 1.) 
@@ -201,14 +193,13 @@ class LennardJones1D(PotentialEnergySurface1D):
     
     def __init__(self, w, c, au=True):
         # Parameters from Chen et al., Phys. Rev. B, 94, 22, 220102 (2016)
-        if not au:
-            w *= angs2bohr
-            c *= angs2bohr
         self.sigma = 3.0 * angs2bohr
         self.factor = 5./12.
         self.epsilon = 21.7E-3 * ev2har
-        self.ow = self.calc_ow()
-        super(LennardJones1D, self).__init__(w, c)
+        if au:
+            super(LennardJones1D, self).__init__(w, c)
+        else:
+            super(LennardJones1D, self).__init__(w*angs2bohr, c*angs2bohr)
     
     def potential_form(self, dz):
         x = (self.sigma / dz)**3
@@ -233,13 +224,12 @@ class LennardJones1DStanley(PotentialEnergySurface1D):
     
     def __init__(self, w, c, au=True):
         # Parameters from Kumar et al., Phys. Rev. E, 72, 5, 051503 (2005)
-        if not au:
-            w *= angs2bohr
-            c *= angs2bohr
         self.sigma = 2.5 * angs2bohr
         self.epsilon = 1.25 / L * kJ2eV * ev2har # 1.25 kJ/mol, converted to Ha
-        self.ow = self.calc_ow()
-        super(LennardJones1DStanley, self).__init__(w, c)
+        if au:
+            super(LennardJones1DStanley, self).__init__(w, c)
+        else:
+            super(LennardJones1DStanley, self).__init__(w*angs2bohr, c*angs2bohr)
     
     def potential_form(self, dz):
         x = (self.sigma / dz)**3
