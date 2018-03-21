@@ -117,13 +117,13 @@ class PotentialEnergySurface1D(object):
     def gradient(self, z):
         return self.gradient_lower(z) + self.gradient_upper(z)
     
-    def force(self, z):
+    def force(self, z, checked_confined=False):
         return -self.gradient(z, checked_confined)
-
+    
     @property
     def w_eff(self):
         return self.w - (self.ow + sigma_TIP5P) / 2.
-
+    
     @property
     def w_eff_su(self):
         return self.w_eff * bohr2angs
@@ -131,7 +131,7 @@ class PotentialEnergySurface1D(object):
     @property
     def r_eq_su(self):
         return self.r_eq * bohr2angs
-
+    
     @property
     def ow_su(self):
         return self.ow * bohr2angs
@@ -342,11 +342,13 @@ def plot_pot_well(w, au=True):
         if au:
             V1 = pot.potential_form(r)
             V2 = pot.potential(z, checked_confined=True)
+            V2 -= np.min(V2)
             ow = pot.calc_ow()
             w_eff = pot.w_eff
         else:
             V1 = (pot.potential_form_su(r) - pot.potential_min*har2ev)*1E3
             V2 = pot.potential_su(z, checked_confined=True)*1E3
+            V2 -= np.min(V2)
             ow = pot.calc_ow() * bohr2angs
             w_eff = pot.w_eff_su
         ax1.plot(r, V1, c=colors[i], label=name)
