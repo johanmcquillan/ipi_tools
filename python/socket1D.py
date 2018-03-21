@@ -9,9 +9,10 @@ from packages.potentials import help_text, get_potential, angs2bohr
 
 # Get arguments
 parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
-parser.add_argument('V', help=help_text())
-parser.add_argument('port', metavar='P', help='Port number (if INET) or address name (if UNIX)')
-parser.add_argument('ip', nargs='?', default=None, help='IP address - if given, opens an INET socket, else a UNIX socket')
+parser.add_argument('V', type=str, help=help_text())
+parser.add_argument('w', type=float, help='Confinement width in Angstroms')
+parser.add_argument('port', type=str, metavar='P', help='Port number (if INET) or address name (if UNIX)')
+parser.add_argument('ip', type=str, nargs='?', default=None, help='IP address - if given, opens an INET socket, else a UNIX socket')
 args = parser.parse_args()
 
 # Get external potential class
@@ -55,7 +56,7 @@ while run_flag == True:
         
         # Instantiate or update the external potential
         if first:
-            pes = PES(5*angs2bohr, cell_h[8])
+            pes = PES(args.w*angs2bohr, cell_h[8])
             first = False
         else:
             pes.update_cell(cell_h[8])
