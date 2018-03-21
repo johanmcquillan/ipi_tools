@@ -14,9 +14,8 @@ parser.add_argument('port', metavar='P', help='Port number (if INET) or address 
 parser.add_argument('ip', nargs='?', default=None, help='IP address - if given, opens an INET socket, else a UNIX socket')
 args = parser.parse_args()
 
-# Check external potential is valid
-try:
-    PES = get_potential(args.V)
+# Get external potential class
+PES = get_potential(args.V)
 
 # Check if INET or UNIX socket
 # If INET, ensure IP and port are valid
