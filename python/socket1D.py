@@ -5,7 +5,7 @@ import numpy as np
 import socket
 import struct
 from argparse import ArgumentParser, RawTextHelpFormatter
-from packages.potentials import help_text, get_potential
+from packages.potentials import help_text, get_potential, angs2bohr
 
 # Get arguments
 parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -55,7 +55,7 @@ while run_flag == True:
         
         # Instantiate or update the external potential
         if first:
-            pes = PES(5*potentials.angs2bohr, cell_h[8])
+            pes = PES(5*angs2bohr, cell_h[8])
             first = False
         else:
             pes.update_cell(cell_h[8])
