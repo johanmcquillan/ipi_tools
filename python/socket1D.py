@@ -45,7 +45,7 @@ else:
 # Initialise socket
 have_data = False
 run_flag = True
-HDRLEN = 12
+header_length = 12
 if address == 'UNIX':
     fsoc = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     fsoc.connect(port)
@@ -55,8 +55,8 @@ else:
 
 # Start force calculation loop
 first = True
-while run_flag == True:
-    msg = fsoc.recv(HDRLEN)
+while run_flag:
+    msg = fsoc.recv(header_length)
     if msg == "POSDATA     ":       # i-PI has sent the data to the socket
         
         # Unpack cell matrix
@@ -81,7 +81,8 @@ while run_flag == True:
         pos = np.zeros([nat,3])
         for atom in range(nat):
             for coord in range(3):
-                pos[atom,coord] = struct.unpack("d", read_pos[atom*24+coord*8:atom*24+(coord+1)*8])[0]
+                pos[atom, coord] = struct.unpack("d", read_pos[24*atom + 8*coord:
+                                                               24*atom + 8*(coord + 1)])[0]
         
         # Get only the z-coordinate of the oxygens
         z_array = pes.pbc(pos[::3, 2])
@@ -96,7 +97,7 @@ while run_flag == True:
         
         have_data = True
     elif msg == "STATUS      ":
-        if have_data == False:
+        if not have_data:
             fsoc.send("READY       ")
         else:
             fsoc.send("HAVEDATA    ")
