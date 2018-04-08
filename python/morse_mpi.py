@@ -6,6 +6,9 @@ import sys
 import numpy as np
 from mpi4py import MPI
 
+__author__ = "Johan G. McQuillan, Wei Fang"
+__email__ = "johan.mcquillan.13@ucl.ac.uk"
+
 # Initialise MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()

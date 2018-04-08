@@ -7,6 +7,9 @@ import struct
 from argparse import ArgumentParser, RawTextHelpFormatter
 from packages.potentials import help_text, get_potential, angs2bohr
 
+__author__ = "Johan G. McQuillan, Wei Fang"
+__email__ = "johan.mcquillan.13@ucl.ac.uk"
+
 # Get arguments
 parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
 parser.add_argument('V', type=str, help=help_text())

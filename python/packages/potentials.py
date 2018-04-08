@@ -8,6 +8,9 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from functools import wraps
 from scipy.optimize import fsolve
 
+__author__ = "Johan G. McQuillan"
+__email__ = "johan.mcquillan.13@ucl.ac.uk"
+
 # i-PI uses atomic units
 #       Bohr Radii (a0),    Hartree (Ha)
 # Sane people use (what I call) standard units
