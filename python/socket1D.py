@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+"""Applies a one-dimensional confining potential to the oxygen atoms in an i-PI water simulation.
+
+Connects to a UNIX or INET socket opened by i-PI and computes the force and potential of two
+confining walls parallel to the z-axis.
+"""
+
 import inspect
 import numpy as np
 import socket
